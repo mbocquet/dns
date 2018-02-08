@@ -1,2 +1,33 @@
 ---
-# tasks file for roles/dns
+# tasks file for dns
+- name: "packages"
+  package:
+    name: '{{ item }}'
+  with_items:
+    - '{{ dns_packages }}'
+  tags:
+    - dns
+    - packages
+
+- name: "{{ dns_default_file }}"
+  lineinfile:
+    dest: '{{ dns_default_file }}'
+    regexp: '^OPTIONS=.*$'
+    line: 'OPTIONS="-u {{ dns_user }} -t {{ dns_chroot }}"'
+  tags:
+    - dns
+    - default
+
+- name: "{{ dns_chroot }} folders"
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: 'root'
+    group: '{{ dns_user }}'
+    # TODO # is this mode right ?
+    mode: '2775'
+  with_items:
+    - '{{ dns_chroot }}'
+    - '{{ dns_chroot }}/etc'
+    - '{{ dns_chroot }}/etc/bind'
+...
