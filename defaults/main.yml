@@ -1,2 +1,10 @@
 ---
-# defaults file for roles/dns
+# defaults file for dns
+dns_packages:
+  - 'bind9'
+
+# default values
+dns_default_file: '/etc/default/bind9'
+dns_user: 'bind'
+dns_chroot: '/var/lib/named'
+...
