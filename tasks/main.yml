@@ -18,16 +18,102 @@
     - dns
     - default
 
-- name: "{{ dns_chroot }} folders"
+- name: "{{ dns_chroot }} folder"
   file:
     path: '{{ item }}'
     state: directory
     owner: 'root'
     group: '{{ dns_user }}'
-    # TODO # is this mode right ?
     mode: '2775'
   with_items:
-    - '{{ dns_chroot }}'
-    - '{{ dns_chroot }}/etc'
     - '{{ dns_chroot }}/etc/bind'
+  tags:
+    - dns
+
+- name: "check that K{{ dns_domain }} file(s) exists"
+  shell: 'ls /etc/bind/K{{ dns_domain }}.*.key'
+  register: Kfiles
+  ignore_errors: true
+  when: dns_role == "master"
+  tags:
+    - dns
+
+- name: "display Kfiles"
+  debug:
+    var: Kfiles
+  when: Kfiles | succeeded
+#  when:
+#    - dns_role == "master"
+#    - Kfiles | succeeded
+  tags:
+    - dns
+
+- name: "create DNSSEC key for {{ dns_domain }}"
+  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_domain }}'
+  when: Kfiles | failed
+  register: Kfilescreated
+  tags:
+    - dns
+
+- name: "display Kfilescreated"
+  debug:
+    var: Kfilescreated
+  when: Kfilescreated | succeeded
+  tags:
+    - dns
+
+- name: "get Kfiles name"
+  set_fact:
+    Kfilename: "{{ Kfiles.stdout }}"
+  tags:
+    - dns
+
+- name: "display Kfilename"
+  debug:
+    msg: "{{ Kfilename }}"
+  tags:
+    - dns
+
+- name: "extract key from {{ Kfilename }}"
+  shell: "cat {{ Kfilename }}|cut -d' ' -f 7"
+  register: rndckey
+  tags:
+    - dns
+
+- name: "display rndckey"
+  debug:
+    var: rndckey.stdout
+  when: rndckey | succeeded
+  tags:
+    - dns
+
+- name: "set rndckeyvalue"
+  set_fact:
+    rndckeyvalue: "{{ rndckey.stdout }}"
+  tags:
+    - dns
+
+- name: "check if /etc/bind/rndc.key exists"
+  stat:
+    path: '/etc/bind/rndc.key'
+  register: rndckeyexists
+  tags:
+    - dns
+
+- name: "update /etc/bind/rndc.key with new key"
+  lineinfile:
+    dest: '/etc/bind/rndc.key'
+    regexp: '^.*secret.*$'
+    line: '        secret "{{ rndckey.stdout }}";'
+  when: rndckeyexists.stat.exists
+  tags:
+    - dns
+  
+- name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
+  # TODO # do this awful thing only if files are present in /etc/bind/
+  # TODO # put a .README.{{ dns_domain }} to explain that all files moved to the chroot.
+  # TODO # Don't copy dpkg's newer files after upgrade !
+  shell: 'mv /etc/bind/* {{ dns_chroot }}/etc/bind/'
+  tags:
+    - dns
 ...
