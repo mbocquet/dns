@@ -8,6 +8,10 @@ dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
 dns_chroot: '/var/lib/named'
 # dns_domain: 'example.org'
+# 
 # dns_role: should be 'master' or 'slave'
 # dns_role: 'master'
+# 
+# dns_type: should be 'internal' or 'public'
+# dns_type: 'internal'
 ...
