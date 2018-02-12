@@ -18,7 +18,15 @@
     - dns
     - default
 
-- name: "{{ dns_chroot }} folder"
+- name: "check if /etc/bind/README.{{ dns_domain }} exists"
+  stat:
+    path: '/etc/bind/README.{{ dns_domain }}'
+  register: README
+  tags:
+    - dns
+    - readme
+
+- name: "{{ dns_chroot }} folders"
   file:
     path: '{{ item }}'
     state: directory
@@ -27,6 +35,37 @@
     mode: '2775'
   with_items:
     - '{{ dns_chroot }}/etc/bind'
+    - '{{ dns_chroot }}/dev'
+    - '{{ dns_chroot }}/var/run'
+    - '{{ dns_chroot }}/var/cache/bind'
+#  when: README.stat.exists == False
+  tags:
+    - dns
+    - folders
+
+- name: "create device nodes in {{ dns_chroot }}"
+  shell: "mknod {{ item.localdev }} c 1 {{ item.localvalue }}"
+  args:
+    creates: "{{ item.localdev }}"
+  with_items:
+    - { localdev: '{{ dns_chroot }}/dev/random',  localvalue: '8' }
+    - { localdev: '{{ dns_chroot }}/dev/urandom', localvalue: '9' }
+  tags:
+    - dns
+    - devices
+
+- name: "create DNSSEC key for {{ dns_domain }}"
+  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_domain }}'
+  # when: ( Kfiles | failed ) and ( README.stat.exists == False )
+  when: README.stat.exists == False
+  register: Kfilescreated
+  tags:
+    - dns
+
+- name: "display Kfilescreated"
+  debug:
+    var: Kfilescreated
+  when: Kfilescreated | succeeded
   tags:
     - dns
 
@@ -48,48 +87,38 @@
   tags:
     - dns
 
-- name: "create DNSSEC key for {{ dns_domain }}"
-  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_domain }}'
-  when: Kfiles | failed
-  register: Kfilescreated
-  tags:
-    - dns
-
-- name: "display Kfilescreated"
-  debug:
-    var: Kfilescreated
-  when: Kfilescreated | succeeded
-  tags:
-    - dns
-
 - name: "get Kfiles name"
   set_fact:
     Kfilename: "{{ Kfiles.stdout }}"
+  when: Kfilescreated | succeeded
   tags:
     - dns
 
 - name: "display Kfilename"
   debug:
     msg: "{{ Kfilename }}"
+  when: Kfilescreated | succeeded
   tags:
     - dns
 
 - name: "extract key from {{ Kfilename }}"
   shell: "cat {{ Kfilename }}|cut -d' ' -f 7"
   register: rndckey
+  when: ( Kfilescreated | succeeded ) and ( README.stat.exists == False )
   tags:
     - dns
 
 - name: "display rndckey"
   debug:
     var: rndckey.stdout
-  when: rndckey | succeeded
+  when: ( rndckey | succeeded ) and ( README.stat.exists == False )
   tags:
     - dns
 
 - name: "set rndckeyvalue"
   set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
+  when: ( rndckey | succeeded ) and ( README.stat.exists == False )
   tags:
     - dns
 
@@ -108,12 +137,33 @@
   when: rndckeyexists.stat.exists
   tags:
     - dns
-  
+    - rndckey
+
 - name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
-  # TODO # do this awful thing only if files are present in /etc/bind/
-  # TODO # put a .README.{{ dns_domain }} to explain that all files moved to the chroot.
-  # TODO # Don't copy dpkg's newer files after upgrade !
   shell: 'mv /etc/bind/* {{ dns_chroot }}/etc/bind/'
+  when: README.stat.exists == False
+  register: chrooted
   tags:
     - dns
+    - chroot
+
+- name: "create /etc/bind/README.{{ dns_domain }}"
+  template:
+    src: 'README.chroot.j2'
+    dest: '/etc/bind/README.{{ dns_domain }}'
+  when: chrooted | succeeded
+  tags:
+    - dns
+    - readme
+
+- name: "create named.conf.local in chroot"
+  template:
+    src: 'named.conf.local.j2'
+    dest: '{{ dns_chroot }}/etc/bind/named.conf.local'
+  tags:
+    - dns
+    - chroot
+
+# - name: "create direct zone files"
+# - name: "create reverse zone files"
 ...
