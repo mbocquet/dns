@@ -8,10 +8,21 @@ dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
 dns_chroot: '/var/lib/named'
 # dns_domain: 'example.org'
-# 
-# dns_role: should be 'master' or 'slave'
+
+# dns_role: should be 'master' or 'slave'.
 # dns_role: 'master'
-# 
-# dns_type: should be 'internal' or 'public'
+
+# dns_type: should be 'local' or 'public'.
 # dns_type: 'internal'
+
+# dns_control: control socket address. Should contains at least 127.0.0.1.
+dns_control: '127.0.0.1'
+
+# dns_localnet: should contains local network definition to make a default
+# 'local' acl.
+# dns_localnet: '192.168.1.0/24'
+
+# dns_forwarders:
+#   - '0.0.0.0'
+#   - '1.1.1.1'
 ...
