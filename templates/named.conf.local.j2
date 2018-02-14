@@ -9,40 +9,33 @@
 
 include "/etc/bind/rndc.key";
 
-// controls {
-//         inet 127.0.0.1 allow {
-//         127.0.0.1;
-//         }
-//         keys {
-//                 "rndc-key";
-//         };
-// };
-// 
-// acl "local" {
-//         127.0.0.1;
-//         192.168.1.0/24;
-// };
-// 
-// acl "recurseallow" {
-//         # Allowed ip for recursive requests
-//         127.0.0.1;
-//         192.168.1.0/24;
-// };
-// 
-// zone "local.lan" {
-//         type master;
-//         file "/etc/bind/zones/local.lan";
-//         notify no;
-//         allow-update {
-//                 key rndc-key;
-//         };
-// };
-// 
-// zone "1.168.192.in-addr.arpa" {
-//         type master;
-//         file "/etc/bind/zones/192.168.1";
-//         notify no;
-//         allow-update {
-//                 key rndc-key;
-//         };
-// };
+controls {
+        inet {{ dns_control }} allow {
+                {{ dns_control }};
+        }
+        keys {
+                "rndc-key";
+        };
+};
+
+acl "local" {
+        127.0.0.1;
+        {{ dns_localnet }};
+};
+
+acl "recurseallow" {
+        # Allowed ip for recursive requests
+        127.0.0.1;
+        {{ dns_localnet }};
+};
+{% for zone in dns_zones %}
+
+zone "{{ zone.name }}" {
+        type {{ dns_role }};
+        file "/etc/bind/zones/{{ zone.file }}";
+        notify {% if dns_role == 'master' %}yes{% else %}no{% endif %};
+        allow-update {
+                key rndc-key;
+        };
+};
+{% endfor %}

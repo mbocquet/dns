@@ -35,6 +35,7 @@
     mode: '2775'
   with_items:
     - '{{ dns_chroot }}/etc/bind'
+    - '{{ dns_chroot }}/etc/bind/zones'
     - '{{ dns_chroot }}/dev'
     - '{{ dns_chroot }}/var/run'
     - '{{ dns_chroot }}/var/cache/bind'
@@ -156,14 +157,30 @@
     - dns
     - readme
 
-- name: "create named.conf.local in chroot"
+- name: "named.conf.local in chroot"
   template:
     src: 'named.conf.local.j2'
     dest: '{{ dns_chroot }}/etc/bind/named.conf.local'
   tags:
     - dns
-    - chroot
+    - local
 
-# - name: "create direct zone files"
-# - name: "create reverse zone files"
+- name: "named.conf.options"
+  template:
+    src: 'named.conf.options.j2'
+    dest: '{{ dns_chroot }}/etc/bind/named.conf.options'
+  tags:
+    - dns
+    - options
+
+- name: "zones files"
+  template:
+    src: 'zone.{{ item.type }}.j2'
+    dest: '{{ dns_chroot }}/etc/bind/zones/{{ item.file }}'
+    group: '{{ dns_user }}'
+    mode: '0664'
+  with_items: '{{ dns_zones }}'
+  tags:
+    - dns
+    - zones
 ...
