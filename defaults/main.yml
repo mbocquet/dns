@@ -2,6 +2,7 @@
 # defaults file for dns
 dns_packages:
   - 'bind9'
+  - 'dnsutils'
 
 # default values
 dns_default_file: '/etc/default/bind9'
