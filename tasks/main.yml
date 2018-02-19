@@ -5,6 +5,7 @@
     name: '{{ item }}'
   with_items:
     - '{{ dns_packages }}'
+  notify: 'start bind'
   tags:
     - dns
     - packages
@@ -14,6 +15,7 @@
     dest: '{{ dns_default_file }}'
     regexp: '^OPTIONS=.*$'
     line: 'OPTIONS="-u {{ dns_user }} -t {{ dns_chroot }}"'
+  notify: 'start bind'
   tags:
     - dns
     - default
@@ -40,6 +42,7 @@
     - '{{ dns_chroot }}/var/run'
     - '{{ dns_chroot }}/var/cache/bind'
 #  when: README.stat.exists == False
+  notify: 'start bind'
   tags:
     - dns
     - folders
@@ -51,17 +54,20 @@
   with_items:
     - { localdev: '{{ dns_chroot }}/dev/random',  localvalue: '8' }
     - { localdev: '{{ dns_chroot }}/dev/urandom', localvalue: '9' }
+  notify: 'start bind'
   tags:
     - dns
     - devices
 
-- name: "create DNSSEC key for {{ dns_domain }}"
-  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_domain }}'
+- name: "create DNSSEC key files"
+  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
   # when: ( Kfiles | failed ) and ( README.stat.exists == False )
   when: README.stat.exists == False
   register: Kfilescreated
+  notify: 'start bind'
   tags:
     - dns
+    - keys
 
 - name: "display Kfilescreated"
   debug:
@@ -70,8 +76,8 @@
   tags:
     - dns
 
-- name: "check that K{{ dns_domain }} file(s) exists"
-  shell: 'ls /etc/bind/K{{ dns_domain }}.*.key'
+- name: "check that K{{ dns_keyname }} file(s) exists"
+  shell: 'ls /etc/bind/K*.key'
   register: Kfiles
   ignore_errors: true
   when: dns_role == "master"
@@ -141,9 +147,24 @@
     - rndckey
 
 - name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
-  shell: 'mv /etc/bind/* {{ dns_chroot }}/etc/bind/'
-  when: README.stat.exists == False
+  shell: 'mv /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
   register: chrooted
+  with_items:
+    - bind.keys
+    - db.0
+    - db.127
+    - db.255
+    - db.empty
+    - db.local
+    - db.root
+    - named.conf
+    - named.conf.default-zones
+    - named.conf.local
+    - named.conf.options
+    - zones.rfc1918
+    - rndc.key
+  when: README.stat.exists == False
+  notify: 'start bind'
   tags:
     - dns
     - chroot
@@ -153,6 +174,7 @@
     src: 'README.chroot.j2'
     dest: '/etc/bind/README.{{ dns_domain }}'
   when: chrooted | succeeded
+  notify: 'start bind'
   tags:
     - dns
     - readme
@@ -161,6 +183,7 @@
   template:
     src: 'named.conf.local.j2'
     dest: '{{ dns_chroot }}/etc/bind/named.conf.local'
+  notify: 'start bind'
   tags:
     - dns
     - local
@@ -169,6 +192,7 @@
   template:
     src: 'named.conf.options.j2'
     dest: '{{ dns_chroot }}/etc/bind/named.conf.options'
+  notify: 'start bind'
   tags:
     - dns
     - options
@@ -180,6 +204,7 @@
     group: '{{ dns_user }}'
     mode: '0664'
   with_items: '{{ dns_zones }}'
+  notify: 'start bind'
   tags:
     - dns
     - zones

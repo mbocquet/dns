@@ -1,2 +1,7 @@
 ---
 # handlers file for dns
+- name: start bind
+  service:
+    name: bind9
+    state: started
+...

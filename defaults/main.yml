@@ -7,6 +7,7 @@ dns_packages:
 # default values
 dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
+dns_keyname: 'rndc-key'
 dns_chroot: '/var/lib/named'
 # dns_domain: 'example.org'
 
