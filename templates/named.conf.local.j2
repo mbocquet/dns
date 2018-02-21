@@ -18,6 +18,12 @@ controls {
         };
 };
 
+acl "queryallow" {
+        127.0.0.1;
+        {% for subnet in dns_queryallow %}{{ subnet }};
+        {% endfor %}
+};
+
 acl "local" {
         127.0.0.1;
         {{ dns_localnet }};

@@ -33,10 +33,11 @@ options {
 
         {% if dns_type == 'local' %}allow-query {
             "local";
-        };
-        {% elif dns_type == 'public' %}allow-recursion {
-            "recurseallow";
+            "queryallow";
         };
 {% endif %}
 
+        allow-recursion {
+            "recurseallow";
+        };
 };
