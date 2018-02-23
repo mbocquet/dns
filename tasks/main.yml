@@ -142,17 +142,17 @@
     - dns
     - keys
 
-- name: "check if /etc/bind/rndc.key exists"
+- name: "check if {{ dns_keyfile }} exists"
   stat:
-    path: '/etc/bind/rndc.key'
+    path: '{{ dns_keyfile }}'
   register: rndckeyexists
   tags:
     - dns
     - keys
 
-- name: "update /etc/bind/rndc.key with new key"
+- name: "update {{ dns_keyfile }} with new key"
   lineinfile:
-    dest: '/etc/bind/rndc.key'
+    dest: '{{ dns_keyfile }}'
     regexp: '^.*secret.*$'
     line: '        secret "{{ rndckey.stdout }}";'
   when: rndckeyexists.stat.exists
@@ -160,11 +160,11 @@
     - dns
     - rndckey
 
-- name: "copy /etc/bind content to {{ dns_chroot }}/etc/bind"
-  shell: 'cp /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
+- name: "copy some /etc/bind content to {{ dns_chroot }}/etc/bind"
+  shell: 'cp {{ item }} {{ dns_chroot }}/etc/bind/'
   register: chrooted
   with_items:
-    - rndc.key
+    - '{{ dns_keyfile }}'
   when: README.stat.exists == False
   notify: 'start bind'
   tags:
@@ -187,7 +187,6 @@
     - named.conf.local
     - named.conf.options
     - zones.rfc1918
-    - rndc.key
   when: README.stat.exists == False
   notify: 'start bind'
   tags:

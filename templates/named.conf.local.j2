@@ -7,7 +7,7 @@
 // organization
 {% if dns_type == "internal" %}//{% endif %}include "/etc/bind/zones.rfc1918";
 
-include "/etc/bind/rndc.key";
+include "{{ dns_keyfile }}";
 
 controls {
         inet {{ dns_control }} allow {
