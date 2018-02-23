@@ -7,6 +7,7 @@ dns_packages:
 # default values
 dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
+dns_keyfile: '/etc/bind.rndc.key'
 dns_keyname: 'rndc-key'
 dns_chroot: '/var/lib/named'
 # dns_domain: 'example.org'
@@ -14,7 +15,7 @@ dns_chroot: '/var/lib/named'
 # dns_role: should be 'master' or 'slave'.
 # dns_role: 'master'
 
-# dns_type: should be 'local' or 'public'.
+# dns_type: should be 'internal' or 'public'.
 # dns_type: 'internal'
 
 # dns_control: control socket address. Should contains at least 127.0.0.1.
