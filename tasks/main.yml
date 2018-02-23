@@ -75,6 +75,7 @@
   when: Kfilescreated | succeeded
   tags:
     - dns
+    - keys
 
 - name: "check that K{{ dns_keyname }} file(s) exists"
   shell: 'ls /etc/bind/K*.key'
@@ -83,6 +84,7 @@
   when: dns_role == "master"
   tags:
     - dns
+    - keys
 
 - name: "display Kfiles"
   debug:
@@ -93,6 +95,7 @@
 #    - Kfiles | succeeded
   tags:
     - dns
+    - keys
 
 - name: "get Kfiles name"
   set_fact:
@@ -100,6 +103,8 @@
   when: Kfilescreated | succeeded
   tags:
     - dns
+    - keys
+    - facts
 
 - name: "display Kfilename"
   debug:
@@ -107,27 +112,35 @@
   when: Kfilescreated | succeeded
   tags:
     - dns
+    - keys
+    - debug
 
 - name: "extract key from {{ Kfilename }}"
   shell: "cat {{ Kfilename }}|cut -d' ' -f 7"
   register: rndckey
-  when: ( Kfilescreated | succeeded ) and ( README.stat.exists == False )
+  # when: ( Kfilescreated | succeeded ) and ( README.stat.exists == False )
+  when: Kfilescreated | succeeded
   tags:
     - dns
+    - keys
 
 - name: "display rndckey"
   debug:
     var: rndckey.stdout
-  when: ( rndckey | succeeded ) and ( README.stat.exists == False )
+  # when: ( rndckey | succeeded ) and ( README.stat.exists == False )
+  when: rndckey | succeeded
   tags:
     - dns
+    - keys
 
 - name: "set rndckeyvalue"
   set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
-  when: ( rndckey | succeeded ) and ( README.stat.exists == False )
+  # when: ( rndckey | succeeded ) and ( README.stat.exists == False )
+  when: rndckey | succeeded
   tags:
     - dns
+    - keys
 
 - name: "check if /etc/bind/rndc.key exists"
   stat:
@@ -135,6 +148,7 @@
   register: rndckeyexists
   tags:
     - dns
+    - keys
 
 - name: "update /etc/bind/rndc.key with new key"
   lineinfile:
@@ -145,6 +159,17 @@
   tags:
     - dns
     - rndckey
+
+- name: "copy /etc/bind content to {{ dns_chroot }}/etc/bind"
+  shell: 'cp /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
+  register: chrooted
+  with_items:
+    - rndc.key
+  when: README.stat.exists == False
+  notify: 'start bind'
+  tags:
+    - dns
+    - chroot
 
 - name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
   shell: 'mv /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
@@ -197,7 +222,7 @@
     - dns
     - options
 
-- name: "zones files"
+- name: "create minimal zones files"
   template:
     src: 'zone.{{ item.type }}.j2'
     dest: '{{ dns_chroot }}/etc/bind/zones/{{ item.file }}'
@@ -205,6 +230,7 @@
     mode: '0664'
   with_items: '{{ dns_zones }}'
   notify: 'start bind'
+  when: README.stat.exists == False
   tags:
     - dns
     - zones
