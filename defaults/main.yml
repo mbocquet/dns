@@ -7,7 +7,7 @@ dns_packages:
 # default values
 dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
-dns_keyfile: '/etc/bind.rndc.key'
+dns_keyfile: '/etc/bind/rndc.key'
 dns_keyname: 'rndc-key'
 dns_chroot: '/var/lib/named'
 # dns_domain: 'example.org'
@@ -34,4 +34,9 @@ dns_control: '127.0.0.1'
 #   - '10.0.0.0/8'
 #   - '172.16.0.0/12'
 #   - '192.168.0.0/16'
+
+# dns_zones: zones definitions
+# dns_zones:
+#   - { type: 'forward', name:       '{{ dns_domain }}', file: '{{ dns_domain }}' }
+#   - { type: 'reverse', name: '1.168.192.in-addr.arpa', file:        '192.168.1' }
 ...
