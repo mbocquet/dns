@@ -16,6 +16,8 @@
     regexp: '^OPTIONS=.*$'
     line: 'OPTIONS="-u {{ dns_user }} -t {{ dns_chroot }}"'
   notify: 'start bind'
+  when:
+    - ansible_check_mode == False
   tags:
     - dns
     - default
@@ -41,7 +43,6 @@
     - '{{ dns_chroot }}/dev'
     - '{{ dns_chroot }}/var/run'
     - '{{ dns_chroot }}/var/cache/bind'
-#  when: README.stat.exists == False
   notify: 'start bind'
   tags:
     - dns
@@ -61,7 +62,6 @@
 
 - name: "create DNSSEC key files"
   shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
-  # when: ( Kfiles | failed ) and ( README.stat.exists == False )
   when: README.stat.exists == False
   register: Kfilescreated
   notify: 'start bind'
@@ -72,7 +72,7 @@
 - name: "display Kfilescreated"
   debug:
     var: Kfilescreated
-  when: Kfilescreated | succeeded
+  when: Kfilescreated is succeeded
   tags:
     - dns
     - keys
@@ -81,7 +81,8 @@
   shell: 'ls /etc/bind/K*.key'
   register: Kfiles
   ignore_errors: true
-  when: dns_role == "master"
+  when:
+    - dns_role == "master"
   tags:
     - dns
     - keys
@@ -89,10 +90,9 @@
 - name: "display Kfiles"
   debug:
     var: Kfiles
-  when: Kfiles | succeeded
-#  when:
-#    - dns_role == "master"
-#    - Kfiles | succeeded
+  when: Kfiles is succeeded
+  when:
+    - dns_role == "master"
   tags:
     - dns
     - keys
@@ -100,7 +100,9 @@
 - name: "get Kfiles name"
   set_fact:
     Kfilename: "{{ Kfiles.stdout }}"
-  when: Kfilescreated | succeeded
+  when:
+    - ansible_check_mode == False
+    - Kfilescreated is succeeded
   tags:
     - dns
     - keys
@@ -109,7 +111,9 @@
 - name: "display Kfilename"
   debug:
     msg: "{{ Kfilename }}"
-  when: Kfilescreated | succeeded
+  when:
+    - ansible_check_mode == False
+    - Kfilescreated is succeeded
   tags:
     - dns
     - keys
@@ -118,8 +122,9 @@
 - name: "extract key from {{ Kfilename }}"
   shell: "cat {{ Kfilename }}|cut -d' ' -f 7"
   register: rndckey
-  # when: ( Kfilescreated | succeeded ) and ( README.stat.exists == False )
-  when: Kfilescreated | succeeded
+  when:
+    - ansible_check_mode == False
+    - Kfilescreated is succeeded
   tags:
     - dns
     - keys
@@ -127,8 +132,7 @@
 - name: "display rndckey"
   debug:
     var: rndckey.stdout
-  # when: ( rndckey | succeeded ) and ( README.stat.exists == False )
-  when: rndckey | succeeded
+  when: rndckey is succeeded
   tags:
     - dns
     - keys
@@ -136,8 +140,9 @@
 - name: "set rndckeyvalue"
   set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
-  # when: ( rndckey | succeeded ) and ( README.stat.exists == False )
-  when: rndckey | succeeded
+  when: 
+    - ansible_check_mode == False
+    - rndckey is succeeded
   tags:
     - dns
     - keys
@@ -197,7 +202,7 @@
   template:
     src: 'README.chroot.j2'
     dest: '/etc/bind/README.{{ dns_domain }}'
-  when: chrooted | succeeded
+  when: chrooted is succeeded
   notify: 'start bind'
   tags:
     - dns
@@ -221,7 +226,7 @@
     - dns
     - options
 
-- name: "create minimal zones files"
+- name: "zones"
   template:
     src: 'zone.{{ item.type }}.j2'
     dest: '{{ dns_chroot }}/etc/bind/zones/{{ item.file }}'
@@ -229,7 +234,9 @@
     mode: '0664'
   with_items: '{{ dns_zones }}'
   notify: 'start bind'
-  when: README.stat.exists == False
+  when:
+    - ansible_check_mode == False
+    - README.stat.exists == False
   tags:
     - dns
     - zones
