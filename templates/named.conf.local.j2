@@ -18,12 +18,13 @@ controls {
         };
 };
 
-acl "queryallow" {
+{% if dns_queryallow is defined %}acl "queryallow" {
         127.0.0.1;
         {% for subnet in dns_queryallow %}{{ subnet }};
         {% endfor %}
-};
+};{% endif %}
 
+{% if dns_localnet is defined %}
 acl "local" {
         127.0.0.1;
         {{ dns_localnet }};
@@ -33,7 +34,7 @@ acl "recurseallow" {
         # Allowed ip for recursive requests
         127.0.0.1;
         {{ dns_localnet }};
-};
+};{% endif %}
 {% for zone in dns_zones %}
 
 zone "{{ zone.name }}" {
