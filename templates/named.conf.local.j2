@@ -17,14 +17,22 @@ controls {
                 "rndc-key";
         };
 };
-
-{% if dns_queryallow is defined %}acl "queryallow" {
+{% if dns_queryallow is defined %}
+acl "queryallow" {
         127.0.0.1;
         {% for subnet in dns_queryallow %}{{ subnet }};
         {% endfor %}
 };{% endif %}
+{% if dns_role == "master" %}
 
+acl "slaves" {
+        {% for slave in ansible_play_hosts %}{% if hostvars[slave].ansible_default_ipv4.address != ansible_default_ipv4.address %}{{ hostvars[slave].ansible_default_ipv4.address }};{% endif %}
+{% endfor %}
+
+};
+{% endif %}
 {% if dns_localnet is defined %}
+
 acl "local" {
         127.0.0.1;
         {{ dns_localnet }};
@@ -40,9 +48,10 @@ acl "recurseallow" {
 zone "{{ zone.name }}" {
         type {{ dns_role }};
         file "/etc/bind/zones/{{ zone.file }}";
-        notify {% if dns_role == 'master' %}yes{% else %}no{% endif %};
+        {% if dns_role == 'master' %}notify yes;
         allow-update {
                 key rndc-key;
-        };
+        };{% else %}masters { {{ hostvars[dns_master].ansible_default_ipv4.address }}; };{% endif %}
+
 };
 {% endfor %}
