@@ -31,13 +31,29 @@ options {
         auth-nxdomain no;    # conform to RFC1035
         listen-on-v6 { any; };
 
-        {% if dns_type == 'local' %}allow-query {
-            "local";
-            "queryallow";
+        allow-query {
+{% if dns_type == 'internal' %}
+            local;
+            queryallow;
+{% else %}
+            any;
         };
+{% endif %}
+{% if dns_recurseallow is defined %}
 
         allow-recursion {
-            "recurseallow";
+            recurseallow;
+        };
+{% endif %}
+{% if dns_role == "master" or dns_transferallow is defined %}
+
+        allow-transfer {
+{% if dns_role == "master" %}
+            slaves;
+{% endif %}
+{% if dns_transferallow is defined %}
+            transferallow;
+{% endif %}
         };
 {% endif %}
 };
