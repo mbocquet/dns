@@ -36,13 +36,26 @@ acl "slaves" {
 acl "local" {
         127.0.0.1;
         {{ dns_localnet }};
-};
+};{% endif %}
+{% if dns_recurseallow is defined %}
 
 acl "recurseallow" {
         # Allowed ip for recursive requests
         127.0.0.1;
-        {{ dns_localnet }};
-};{% endif %}
+        {% for subnet in dns_recurseallow %}{{ subnet }};
+        {% endfor %}
+};
+{% endif %}
+{% if dns_transferallow is defined %}
+
+acl "transferallow" {
+        # Allowed ip for recursive requests
+        127.0.0.1;
+        {% for subnet in dns_transferallow %}{{ subnet }};
+        {% endfor %}
+};
+{% endif %}
+{% if dns_zones is defined %}
 {% for zone in dns_zones %}
 
 zone "{{ zone.name }}" {
@@ -55,3 +68,4 @@ zone "{{ zone.name }}" {
 
 };
 {% endfor %}
+{% endif %}
