@@ -192,7 +192,7 @@
   template:
     src: 'named.conf.local.j2'
     dest: '{{ dns_chroot }}/etc/bind/named.conf.local'
-  notify: 'start bind'
+  notify: 'reload bind'
   tags:
     - dns
     - local
@@ -201,7 +201,7 @@
   template:
     src: 'named.conf.options.j2'
     dest: '{{ dns_chroot }}/etc/bind/named.conf.options'
-  notify: 'start bind'
+  notify: 'reload bind'
   tags:
     - dns
     - options
@@ -213,7 +213,7 @@
     group: '{{ dns_user }}'
     mode: '0664'
   with_items: '{{ dns_zones }}'
-  notify: 'start bind'
+  notify: 'reload bind'
   when:
     - dns_role == "master"
     - ansible_check_mode == False
