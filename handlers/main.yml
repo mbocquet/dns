@@ -4,4 +4,9 @@
   service:
     name: bind9
     state: started
+
+- name: reload bind
+  service:
+    name: bind9
+    state: reloaded
 ...
