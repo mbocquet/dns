@@ -26,14 +26,22 @@ dns_control: '127.0.0.1'
 # dns_localnet: '192.168.1.0/24'
 
 # dns_forwarders:
-#   - '0.0.0.0'
 #   - '1.1.1.1'
+#   - '2.2.2.2'
 
 # dns_queryallow: should contains allowed query network addresses.
 # dns_queryallow:
 #   - '10.0.0.0/8'
 #   - '172.16.0.0/12'
 #   - '192.168.0.0/16'
+##   - '{{ dns_localnet }}'
+
+# dns_recurseallow: should contains allowed recurse network addresses.
+# dns_recurseallow:
+#   - '10.0.0.0/8'
+#   - '172.16.0.0/12'
+#   - '192.168.0.0/16'
+##   - '{{ dns_localnet }}'
 
 # dns_zones: zones definitions
 # dns_zones:
