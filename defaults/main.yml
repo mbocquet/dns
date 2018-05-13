@@ -10,6 +10,17 @@ dns_user: 'bind'
 dns_keyfile: '/etc/bind/rndc.key'
 dns_keyname: 'rndc-key'
 dns_chroot: '/var/lib/named'
+
+# dns_ttl: default TTL for records
+dns_ttl: '604800'
+
+# dns_soa_*: default values for SOA record
+dns_soa_email: 'hostmaster'
+dns_soa_refresh: '1w'
+dns_soa_retry: '1d'
+dns_soa_expire: '4w'
+dns_soa_minimum: '1d'
+
 # dns_domain: 'example.org'
 
 # dns_role: should be 'master' or 'slave'.
