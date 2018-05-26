@@ -49,7 +49,7 @@ acl "recurseallow" {
 {% if dns_transferallow is defined %}
 
 acl "transferallow" {
-        # Allowed ip for recursive requests
+        # Allowed ip for transfer requests
         127.0.0.1;
         {% for subnet in dns_transferallow %}{{ subnet }};
         {% endfor %}
