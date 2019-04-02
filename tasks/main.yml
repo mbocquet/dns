@@ -17,7 +17,7 @@
     line: 'OPTIONS="-u {{ dns_user }} -t {{ dns_chroot }}"'
   notify: 'start bind'
   when:
-    - ansible_check_mode == False
+    - not ansible_check_mode
   tags:
     - dns
     - default
@@ -64,7 +64,7 @@
   shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
   when:
     - dns_role == "master"
-    - README.stat.exists == False
+    - not README.stat.exists
   register: Kfilescreated
   notify: 'start bind'
   tags:
@@ -77,7 +77,7 @@
   ignore_errors: true
   when:
     - dns_role == "master"
-    - README.stat.exists == False
+    - not README.stat.exists
   tags:
     - dns
     - keys
@@ -87,8 +87,8 @@
     Kfilename: "{{ Kfiles.stdout }}"
   when:
     - dns_role == "master"
-    - README.stat.exists == False
-    - ansible_check_mode == False
+    - not README.stat.exists
+    - not ansible_check_mode
     - Kfilescreated is succeeded
   tags:
     - dns
@@ -100,8 +100,8 @@
   register: rndckey
   when:
     - dns_role == "master"
-    - README.stat.exists == False
-    - ansible_check_mode == False
+    - not README.stat.exists
+    - not ansible_check_mode
     - Kfilescreated is succeeded
   tags:
     - dns
@@ -112,8 +112,8 @@
     rndckeyvalue: "{{ rndckey.stdout }}"
   when: 
     - dns_role == "master"
-    - README.stat.exists == False
-    - ansible_check_mode == False
+    - not README.stat.exists
+    - not ansible_check_mode
     - rndckey is succeeded
   tags:
     - dns
@@ -134,7 +134,7 @@
     line: '        secret "{{ rndckey.stdout }}";'
   when:
     - dns_role == "master"
-    - README.stat.exists == False
+    - not README.stat.exists
     - rndckeyexists.stat.exists
   tags:
     - dns
@@ -146,8 +146,8 @@
   with_items:
     - '{{ dns_keyfile }}'
   when:
-    - ansible_check_mode == False
-    - README.stat.exists == False
+    - not ansible_check_mode
+    - not README.stat.exists
   notify: 'start bind'
   tags:
     - dns
@@ -170,8 +170,8 @@
     - named.conf.options
     - zones.rfc1918
   when:
-    - ansible_check_mode == False
-    - README.stat.exists == False
+    - not ansible_check_mode
+    - not README.stat.exists
   notify: 'start bind'
   tags:
     - dns
@@ -216,8 +216,8 @@
   notify: 'reload bind'
   when:
     - dns_role == "master"
-    - ansible_check_mode == False
-    - README.stat.exists == False
+    - not ansible_check_mode
+    - not README.stat.exists
   tags:
     - dns
     - zones
