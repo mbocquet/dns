@@ -49,7 +49,7 @@
     - folders
 
 - name: "create device nodes in {{ dns_chroot }}"
-  shell: "mknod {{ item.localdev }} c 1 {{ item.localvalue }}"
+  command: "mknod {{ item.localdev }} c 1 {{ item.localvalue }}"
   args:
     creates: "{{ item.localdev }}"
   with_items:
@@ -61,7 +61,7 @@
     - devices
 
 - name: "create DNSSEC key files"
-  shell: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
+  command: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
   when:
     - dns_role == "master"
     - not README.stat.exists
@@ -72,7 +72,7 @@
     - keys
 
 - name: "check that K{{ dns_keyname }} file(s) exists"
-  shell: 'ls /etc/bind/K*.key'
+  command: 'ls /etc/bind/K*.key'
   register: Kfiles
   ignore_errors: true
   when:
@@ -141,7 +141,7 @@
     - rndckey
 
 - name: "copy some /etc/bind content to {{ dns_chroot }}/etc/bind"
-  shell: 'cp {{ item }} {{ dns_chroot }}/etc/bind/'
+  command: 'cp {{ item }} {{ dns_chroot }}/etc/bind/'
   register: chrooted
   with_items:
     - '{{ dns_keyfile }}'
@@ -154,7 +154,7 @@
     - chroot
 
 - name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
-  shell: 'mv /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
+  command: 'mv /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
   register: chrooted
   with_items:
     - bind.keys
