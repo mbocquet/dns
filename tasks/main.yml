@@ -96,7 +96,7 @@
     - facts
 
 - name: "extract key from {{ Kfilename }}"
-  shell: "cat {{ Kfilename }}|cut -d' ' -f 7"
+  shell: "set -o pipefail && cat {{ Kfilename }}|cut -d' ' -f 7"
   register: rndckey
   when:
     - dns_role == "master"
