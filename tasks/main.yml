@@ -216,7 +216,6 @@
   notify: 'reload bind'
   when:
     - dns_role == "master"
-    - not ansible_check_mode
     - not README.stat.exists
   tags:
     - dns
