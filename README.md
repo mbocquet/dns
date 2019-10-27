@@ -16,7 +16,7 @@ None.
 
 ## Install this roles as submodule of an existing GIT repository
 
-`git submodule add https://github.com/mbocquet/dns.git roles/dns`
+`git submodule add https://git.sekoya.org/mb/dns.git roles/dns`
 
 ## Example Playbook
 
