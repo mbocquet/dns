@@ -2,13 +2,12 @@
 # tasks file for dns
 - name: "packages"
   package:
-    name: '{{ item }}'
-  with_items:
-    - '{{ dns_packages }}'
+    name: '{{ dns_packages }}'
+    force_apt_get: yes
   notify: 'start bind'
   tags:
     - dns
-    - packages
+    - package
 
 - name: "{{ dns_default_file }}"
   lineinfile:
