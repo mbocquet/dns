@@ -1,59 +1,58 @@
-// {{ ansible_managed }}
+// {{ ansible_managed }}. role: dns, template: named.conf.options.j2
 
 options {
-        directory "/var/cache/bind";
+	directory "/var/cache/bind";
 
-        // If there is a firewall between you and nameservers you want
-        // to talk to, you may need to fix the firewall to allow multiple
-        // ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+	// If there is a firewall between you and nameservers you want
+	// to talk to, you may need to fix the firewall to allow multiple
+	// ports to talk.  See http://www.kb.cert.org/vuls/id/800113
 
-        // If your ISP provided one or more IP addresses for stable
-        // nameservers, you probably want to use them as forwarders.
-        // Uncomment the following block, and insert the addresses replacing
-        // the all-0's placeholder.
+	// If your ISP provided one or more IP addresses for stable
+	// nameservers, you probably want to use them as forwarders.
+	// Uncomment the following block, and insert the addresses replacing
+	// the all-0's placeholder.
 
-        {% if dns_forwarders is defined %}forwarders {
+	// forwarders {
+	// 	0.0.0.0;
+	// };
+
+	//========================================================================
+	// If BIND logs error messages about the root key being expired,
+	// you will need to update your keys.  See https://www.isc.org/bind-keys
+	//========================================================================
+	dnssec-validation auto;
+
+	listen-on-v6 { any; };
+{% if dns_forwarders is defined %}
+	forwarders {
 {% for forwarder in dns_forwarders %}
-        {{ forwarder }};
+		{{ forwarder }};
 {% endfor %}
-        };
-        {% else %}// forwarders {
-        //  0.0.0.0;
-        // };
-{% endif %}
+	};{% endif %}
 
-        //========================================================================
-        // If BIND logs error messages about the root key being expired,
-        // you will need to update your keys.  See https://www.isc.org/bind-keys
-        //========================================================================
-        dnssec-validation auto;
-
-        auth-nxdomain no;    # conform to RFC1035
-        listen-on-v6 { any; };
-
-        allow-query {
+	allow-query {
 {% if dns_type == 'internal' %}
-            local;
-            queryallow;
+		local;
+		queryallow;
 {% else %}
-            any;
+		any;
 {% endif %}
-        };
+	};
 {% if dns_recurseallow is defined %}
 
-        allow-recursion {
-            recurseallow;
-        };
+	allow-recursion {
+		recurseallow;
+	};
 {% endif %}
 {% if dns_role == "master" or dns_transferallow is defined %}
 
-        allow-transfer {
-{% if dns_role == "master" %}
-            slaves;
-{% endif %}
+	allow-transfer {
+	{% if dns_role == "master" %}
+	slaves;
+	{% endif %}
 {% if dns_transferallow is defined %}
-            transferallow;
+	transferallow;
 {% endif %}
-        };
+	};
 {% endif %}
 };
