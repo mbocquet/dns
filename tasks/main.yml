@@ -1,221 +1,137 @@
 ---
 # tasks file for dns
-- name: "packages"
+- name: package
   package:
-    name: '{{ dns_packages }}'
+    name: '{{ dns_packages | default ( "bind9" ) }}'
     force_apt_get: yes
-  notify: 'start bind'
   tags:
     - dns
     - package
 
-- name: "{{ dns_default_file }}"
-  lineinfile:
-    dest: '{{ dns_default_file }}'
-    regexp: '^OPTIONS=.*$'
-    line: 'OPTIONS="-u {{ dns_user }} -t {{ dns_chroot }}"'
-  notify: 'start bind'
-  when:
-    - not ansible_check_mode
-  tags:
-    - dns
-    - default
+# make me idempotent please # - name: create DNSSEC key files
+# make me idempotent please #   command: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
+# make me idempotent please #   register: Kfilescreation
+# make me idempotent please #   notify: start bind
+# make me idempotent please #   when:
+# make me idempotent please #     - not ansible_check_mode
+# make me idempotent please #     - dns_role == "master"
+# make me idempotent please #   tags:
+# make me idempotent please #     - dns
+# make me idempotent please #     - keys
 
-- name: "check if /etc/bind/README.{{ dns_domain }} exists"
-  stat:
-    path: '/etc/bind/README.{{ dns_domain }}'
-  register: README
-  tags:
-    - dns
-    - readme
-
-- name: "{{ dns_chroot }} folders"
-  file:
-    path: '{{ item }}'
-    state: directory
-    owner: 'root'
-    group: '{{ dns_user }}'
-    mode: '2775'
-  with_items:
-    - '{{ dns_chroot }}/etc/bind'
-    - '{{ dns_chroot }}/etc/bind/zones'
-    - '{{ dns_chroot }}/dev'
-    - '{{ dns_chroot }}/var/run'
-    - '{{ dns_chroot }}/var/cache/bind'
-  notify: 'start bind'
-  tags:
-    - dns
-    - folders
-
-- name: "create device nodes in {{ dns_chroot }}"
-  command: "mknod {{ item.localdev }} c 1 {{ item.localvalue }}"
-  args:
-    creates: "{{ item.localdev }}"
-  with_items:
-    - { localdev: '{{ dns_chroot }}/dev/random',  localvalue: '8' }
-    - { localdev: '{{ dns_chroot }}/dev/urandom', localvalue: '9' }
-  notify: 'start bind'
-  tags:
-    - dns
-    - devices
-
-- name: "create DNSSEC key files"
-  command: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
-  when:
-    - dns_role == "master"
-    - not README.stat.exists
-  register: Kfilescreated
-  notify: 'start bind'
-  tags:
-    - dns
-    - keys
-
-- name: "check that K{{ dns_keyname }} file(s) exists"
-  command: 'ls /etc/bind/K*.key'
+- name: check K file
+  shell: ls /etc/bind/K*.key
   register: Kfiles
-  ignore_errors: true
+  # ignore_errors: "{{ ansible_check_mode }}"
+  changed_when: false
   when:
     - dns_role == "master"
-    - not README.stat.exists
+  check_mode: no
   tags:
     - dns
     - keys
 
-- name: "get Kfiles name"
+- name: get Kfiles name
   set_fact:
     Kfilename: "{{ Kfiles.stdout }}"
   when:
     - dns_role == "master"
-    - not README.stat.exists
-    - not ansible_check_mode
-    - Kfilescreated is succeeded
+    # - not ansible_check_mode
+    # - Kfilescreation is succeeded
+  check_mode: no
   tags:
     - dns
     - keys
     - facts
 
 - name: "extract key from {{ Kfilename }}"
-  shell: "set -o pipefail && cat {{ Kfilename }}|cut -d' ' -f 7"
+  shell:
+    cmd: "set -o pipefail && cat {{ Kfilename }}|cut -d' ' -f 7"
+    executable: /bin/bash
   register: rndckey
+  ignore_errors: "{{ ansible_check_mode }}"
+  changed_when: false
   when:
     - dns_role == "master"
-    - not README.stat.exists
-    - not ansible_check_mode
-    - Kfilescreated is succeeded
+    # - not ansible_check_mode
+    # - Kfilescreation is succeeded
+  check_mode: no
   tags:
     - dns
     - keys
 
-- name: "set rndckeyvalue"
+- name: set rndckeyvalue
   set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
   when: 
     - dns_role == "master"
-    - not README.stat.exists
-    - not ansible_check_mode
+    # - not ansible_check_mode
     - rndckey is succeeded
   tags:
     - dns
     - keys
 
-- name: "check if {{ dns_keyfile }} exists"
+- name: "check {{ dns_keyfile }}"
   stat:
     path: '{{ dns_keyfile }}'
-  register: rndckeyexists
+  register: rndckey
   tags:
     - dns
     - keys
 
-- name: "update {{ dns_keyfile }} with new key"
-  lineinfile:
-    dest: '{{ dns_keyfile }}'
-    regexp: '^.*secret.*$'
-    line: '        secret "{{ rndckey.stdout }}";'
-  when:
-    - dns_role == "master"
-    - not README.stat.exists
-    - rndckeyexists.stat.exists
-  tags:
-    - dns
-    - rndckey
+# make me work please # - name: "update {{ dns_keyfile }} with new key"
+# make me work please #   lineinfile:
+# make me work please #     path: '{{ dns_keyfile }}'
+# make me work please #     regexp: '^.*secret.*$'
+# make me work please #     line: '        secret "{{ rndckey.stdout }}";'
+# make me work please #   when:
+# make me work please #     - dns_role == "master"
+# make me work please #     - not ansible_check_mode
+# make me work please #     - rndckey.stat.exists
+# make me work please #   tags:
+# make me work please #     - dns
+# make me work please #     - rndckey
 
-- name: "copy some /etc/bind content to {{ dns_chroot }}/etc/bind"
-  command: 'cp {{ item }} {{ dns_chroot }}/etc/bind/'
-  register: chrooted
-  with_items:
-    - '{{ dns_keyfile }}'
-  when:
-    - not ansible_check_mode
-    - not README.stat.exists
-  notify: 'start bind'
-  tags:
-    - dns
-    - chroot
-
-- name: "move /etc/bind content to {{ dns_chroot }}/etc/bind"
-  command: 'mv /etc/bind/{{ item }} {{ dns_chroot }}/etc/bind/'
-  register: chrooted
-  with_items:
-    - bind.keys
-    - db.0
-    - db.127
-    - db.255
-    - db.empty
-    - db.local
-    - db.root
-    - named.conf
-    - named.conf.default-zones
-    - named.conf.local
-    - named.conf.options
-    - zones.rfc1918
-  when:
-    - not ansible_check_mode
-    - not README.stat.exists
-  notify: 'start bind'
-  tags:
-    - dns
-    - chroot
-
-- name: "create /etc/bind/README.{{ dns_domain }}"
-  template:
-    src: 'README.chroot.j2'
-    dest: '/etc/bind/README.{{ dns_domain }}'
-  when:
-    - chrooted is succeeded
-  notify: 'start bind'
-  tags:
-    - dns
-    - readme
-
-- name: "named.conf.local in chroot"
+- name: named.conf.local
   template:
     src: 'named.conf.local.j2'
-    dest: '{{ dns_chroot }}/etc/bind/named.conf.local'
-  notify: 'reload bind'
+    dest: /etc/bind/named.conf.local
+    backup: true
+  notify: reload bind
   tags:
     - dns
     - local
 
-- name: "named.conf.options"
+- name: named.conf.options
   template:
     src: 'named.conf.options.j2'
-    dest: '{{ dns_chroot }}/etc/bind/named.conf.options'
-  notify: 'reload bind'
+    dest: /etc/bind/named.conf.options
+    backup: true
+  notify: reload bind
   tags:
     - dns
     - options
 
-- name: "zones"
+- name: check zones files
+  stat:
+    path: '/etc/bind/zones/{{ item.file }}'
+  register: dns_zonefiles
+  loop: '{{ dns_zones }}'
+  tags:
+    - dns
+    - zones
+
+- name: zone files
   template:
-    src: 'zone.{{ item.type }}.j2'
-    dest: '{{ dns_chroot }}/etc/bind/zones/{{ item.file }}'
+    src: 'zone.{{ item.item.type }}.j2'
+    dest: '/etc/bind/zones/{{ item.item.file }}'
     group: '{{ dns_user }}'
     mode: '0664'
-  with_items: '{{ dns_zones }}'
-  notify: 'reload bind'
+  loop: '{{ dns_zonefiles.results }}'
+  notify: reload bind
   when:
     - dns_role == "master"
-    - not README.stat.exists
+    - not item.stat.exists
   tags:
     - dns
     - zones
