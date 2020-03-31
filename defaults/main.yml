@@ -1,15 +1,20 @@
 ---
 # defaults file for dns
-dns_packages:
-  - 'bind9'
-  - 'dnsutils'
+
+# commented variables are examples and should not be uncommented here but
+# modified in group_vars or host_vars files. uncommented variables in this file
+# are default and should not be changed
+
+# example to install also dnsutils (for dig, nsupdate, etc)
+# dns_packages:
+#   - 'bind9'
+#   - 'dnsutils'
 
 # default values
 dns_default_file: '/etc/default/bind9'
 dns_user: 'bind'
 dns_keyfile: '/etc/bind/rndc.key'
 dns_keyname: 'rndc-key'
-dns_chroot: '/var/lib/named'
 
 # dns_ttl: default TTL for records
 dns_ttl: '604800'
@@ -37,8 +42,8 @@ dns_control: '127.0.0.1'
 # dns_localnet: '192.168.1.0/24'
 
 # dns_forwarders:
-#   - '1.1.1.1'
-#   - '2.2.2.2'
+#   - '1.2.3.4'
+#   - '2.3.4.5'
 
 # dns_queryallow: should contains allowed query network addresses.
 # dns_queryallow:
