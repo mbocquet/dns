@@ -3,7 +3,6 @@
 - name: package
   package:
     name: '{{ dns_packages | default ( "bind9" ) }}'
-    force_apt_get: yes
   tags:
     - dns
     - package
