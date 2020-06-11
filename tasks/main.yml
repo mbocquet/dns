@@ -52,7 +52,7 @@
   args:
     creates: "{{ item.localdev }}"
   with_items:
-    - { localdev: '{{ dns_chroot }}/dev/random',  localvalue: '8' }
+    - { localdev: '{{ dns_chroot }}/dev/random', localvalue: '8' }
     - { localdev: '{{ dns_chroot }}/dev/urandom', localvalue: '9' }
   notify: 'start bind'
   tags:
@@ -109,7 +109,7 @@
 - name: "set rndckeyvalue"
   set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
-  when: 
+  when:
     - dns_role == "master"
     - not README.stat.exists
     - not ansible_check_mode
