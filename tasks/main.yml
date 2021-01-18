@@ -25,7 +25,7 @@
   changed_when: false
   when:
     - dns_role == "master"
-  check_mode: no
+  check_mode: false
   tags:
     - dns
     - keys
@@ -37,7 +37,7 @@
     - dns_role == "master"
     # - not ansible_check_mode
     # - Kfilescreation is succeeded
-  check_mode: no
+  check_mode: false
   tags:
     - dns
     - keys
@@ -54,7 +54,7 @@
     - dns_role == "master"
     # - not ansible_check_mode
     # - Kfilescreation is succeeded
-  check_mode: no
+  check_mode: false
   tags:
     - dns
     - keys
