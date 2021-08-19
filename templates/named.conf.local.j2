@@ -20,15 +20,19 @@ controls {
 {% if dns_queryallow is defined %}
 acl "queryallow" {
         127.0.0.1;
-        {% for subnet in dns_queryallow %}{{ subnet }};
-        {% endfor %}
-};{% endif %}
+{% for subnet in dns_queryallow %}
+        {{ subnet }};
+{% endfor %}
+};
+{% endif %}
 {% if dns_role == "master" %}
 
 acl "slaves" {
-        {% for slave in ansible_play_hosts %}{% if hostvars[slave].ansible_default_ipv4.address != ansible_default_ipv4.address %}{{ hostvars[slave].ansible_default_ipv4.address }};{% endif %}
+{% for slave in ansible_play_hosts %}
+{% if hostvars[slave].ansible_default_ipv4.address != ansible_default_ipv4.address %}
+        {{ hostvars[slave].ansible_default_ipv4.address }};
+{% endif %}
 {% endfor %}
-
 };
 {% endif %}
 {% if dns_localnet is defined %}
@@ -42,8 +46,9 @@ acl "local" {
 acl "recurseallow" {
         # Allowed ip for recursive requests
         127.0.0.1;
-        {% for subnet in dns_recurseallow %}{{ subnet }};
-        {% endfor %}
+{% for subnet in dns_recurseallow %}
+        {{ subnet }};
+{% endfor %}
 };
 {% endif %}
 {% if dns_transferallow is defined %}
@@ -51,8 +56,9 @@ acl "recurseallow" {
 acl "transferallow" {
         # Allowed ip for transfer requests
         127.0.0.1;
-        {% for subnet in dns_transferallow %}{{ subnet }};
-        {% endfor %}
+{% for subnet in dns_transferallow %}
+        {{ subnet }};
+{% endfor %}
 };
 {% endif %}
 {% if dns_zones is defined %}
@@ -60,12 +66,19 @@ acl "transferallow" {
 
 zone "{{ zone.name }}" {
         type {{ dns_role }};
+{% if dns_role == 'master' %}
         file "/etc/bind/zones/{{ zone.file }}";
-        {% if dns_role == 'master' %}notify yes;
+{% else %}
+        file "/var/lib/bind/{{ zone.file }}";
+{% endif %}
+{% if dns_role == 'master' %}
+        notify yes;
         allow-update {
                 key rndc-key;
-        };{% else %}masters { {{ hostvars[dns_master].ansible_default_ipv4.address }}; };{% endif %}
-
+        };
+{% else %}
+        masters { {{ hostvars[dns_master].ansible_default_ipv4.address }}; };
+{% endif %}
 };
 {% endfor %}
 {% endif %}
