@@ -22,7 +22,13 @@ options {
 	//========================================================================
 	dnssec-validation auto;
 
-	listen-on-v6 { any; };
+	listen-on-v6 {
+{% if dns_type == 'internal' %}
+		local;
+{% else %}
+		any;
+{% endif %}
+	};
 {% if dns_forwarders is defined %}
 	forwarders {
 {% for forwarder in dns_forwarders %}
