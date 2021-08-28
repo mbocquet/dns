@@ -20,6 +20,7 @@ controls {
 {% if dns_queryallow is defined %}
 acl "queryallow" {
         127.0.0.1;
+        ::1;
 {% for subnet in dns_queryallow %}
         {{ subnet }};
 {% endfor %}
@@ -39,6 +40,7 @@ acl "slaves" {
 
 acl "local" {
         127.0.0.1;
+        ::1;
         {{ dns_localnet }};
 };{% endif %}
 {% if dns_recurseallow is defined %}
@@ -46,6 +48,7 @@ acl "local" {
 acl "recurseallow" {
         # Allowed ip for recursive requests
         127.0.0.1;
+        ::1;
 {% for subnet in dns_recurseallow %}
         {{ subnet }};
 {% endfor %}
@@ -56,6 +59,7 @@ acl "recurseallow" {
 acl "transferallow" {
         # Allowed ip for transfer requests
         127.0.0.1;
+        ::1;
 {% for subnet in dns_transferallow %}
         {{ subnet }};
 {% endfor %}
