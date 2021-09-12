@@ -1,6 +1,8 @@
 galaxy_info:
   author: Mathias BOCQUET
-  description: Ansible role to install and configure DNS (bind9). Can be plugged to DHCPs server(s).
+  description:
+    Ansible role to install and configure DNS (bind9). Can be plugged to DHCPs
+    server(s).
   company: Sekoya.org (http://www.sekoya.org)
 
   issue_tracker_url: https://git.sekoya.org/mb/dns/issues
@@ -12,15 +14,12 @@ galaxy_info:
   platforms:
   - name: Debian
     versions:
-    #- all
+    - bookworm
+    - bullseye
     - buster
-    #- etch
     - jessie
-    #- lenny
     - sid
-    #- squeeze
     - stretch
-    #- wheezy
 
   galaxy_tags:
     - dns

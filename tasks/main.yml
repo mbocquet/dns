@@ -7,16 +7,18 @@
     - dns
     - package
 
-# make me idempotent please # - name: create DNSSEC key files
-# make me idempotent please #   command: 'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
-# make me idempotent please #   register: Kfilescreation
-# make me idempotent please #   notify: start bind
-# make me idempotent please #   when:
-# make me idempotent please #     - not ansible_check_mode
-# make me idempotent please #     - dns_role == "master"
-# make me idempotent please #   tags:
-# make me idempotent please #     - dns
-# make me idempotent please #     - keys
+# TODO fix me
+# - name: create DNSSEC key files
+#   command:
+#     'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
+#   register: Kfilescreation
+#   notify: start bind
+#   when:
+#     - not ansible_check_mode
+#     - dns_role == "master"
+#   tags:
+#     - dns
+#     - keys
 
 - name: check K file
   shell: ls /etc/bind/K*.key
@@ -78,18 +80,19 @@
     - dns
     - keys
 
-# make me work please # - name: "update {{ dns_keyfile }} with new key"
-# make me work please #   lineinfile:
-# make me work please #     path: '{{ dns_keyfile }}'
-# make me work please #     regexp: '^.*secret.*$'
-# make me work please #     line: '        secret "{{ rndckey.stdout }}";'
-# make me work please #   when:
-# make me work please #     - dns_role == "master"
-# make me work please #     - not ansible_check_mode
-# make me work please #     - rndckey.stat.exists
-# make me work please #   tags:
-# make me work please #     - dns
-# make me work please #     - rndckey
+# TODO fix me
+# - name: "update {{ dns_keyfile }} with new key"
+#   lineinfile:
+#     path: '{{ dns_keyfile }}'
+#     regexp: '^.*secret.*$'
+#     line: '        secret "{{ rndckey.stdout }}";'
+#   when:
+#     - dns_role == "master"
+#     - not ansible_check_mode
+#     - rndckey.stat.exists
+#   tags:
+#     - dns
+#     - rndckey
 
 - name: named.conf.local
   template:
@@ -134,4 +137,3 @@
   tags:
     - dns
     - zones
-...
