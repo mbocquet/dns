@@ -118,9 +118,11 @@
 
 - name: check zones files
   stat:
-    path: '/etc/bind/zones/{{ item.file }}'
+    path: '{{ dns_directory }}/{{ item.file }}'
   register: dns_zonefiles
   loop: '{{ dns_zones }}'
+  when:
+    - dns_role == "master"
   tags:
     - dns
     - zones
@@ -128,8 +130,8 @@
 - name: zone files
   template:
     src: 'zone.{{ item.item.type }}.j2'
-    dest: '/etc/bind/zones/{{ item.item.file }}'
-    group: '{{ dns_user }}'
+    dest: '{{ dns_directory }}/{{ item.item.file }}'
+    group: '{{ dns_group }}'
     mode: '0664'
   loop: '{{ dns_zonefiles.results }}'
   notify: reload bind
