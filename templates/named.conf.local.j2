@@ -70,11 +70,7 @@ acl "transferallow" {
 
 zone "{{ zone.name }}" {
         type {{ dns_role }};
-{% if dns_role == 'master' %}
-        file "/etc/bind/zones/{{ zone.file }}";
-{% else %}
-        file "/var/lib/bind/{{ zone.file }}";
-{% endif %}
+        file "{{ zone.file }}";
 {% if dns_role == 'master' %}
         notify yes;
         allow-update {
