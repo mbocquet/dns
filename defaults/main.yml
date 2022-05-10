@@ -11,6 +11,8 @@
 #   - 'dnsutils'
 
 # default values
+dns_directory: /var/cache/bind
+dns_group: bind
 dns_keyfile: '/etc/bind/rndc.key'
 dns_keyname: 'rndc-key'
 
@@ -61,4 +63,3 @@ dns_control: '127.0.0.1'
 # dns_zones:
 #   - { type: 'forward', name: '{{ dns_domain }}', file: '{{ dns_domain }}' }
 #   - { type: 'reverse', name: '1.168.192.in-addr.arpa', file: '192.168.1' }
-...
