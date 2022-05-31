@@ -7,6 +7,12 @@
     - dns
     - package
 
+- name: service_facts
+  ansible.builtin.service_facts:
+  tags:
+    - dns
+    - facts
+
 # TODO fix me
 # - name: create DNSSEC key files
 #   command:

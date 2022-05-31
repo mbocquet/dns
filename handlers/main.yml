@@ -4,4 +4,5 @@
   service:
     name: bind9
     state: reloaded
-...
+  when:
+    - "'bind9.service' in services"
