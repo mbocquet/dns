@@ -5,7 +5,7 @@ $TTL {{ dns_ttl }}
     {{ dns_soa_retry }} ; retry
     {{ dns_soa_expire }} ; expire
     {{ dns_soa_minimum }} ; minimum
-    ) 
+    )
 
 {% for ns in ansible_play_hosts %}
      NS {{ ns }}.{{ dns_domain }}.
