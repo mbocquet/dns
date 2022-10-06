@@ -53,7 +53,7 @@
 
 - name: "extract key from {{ Kfilename }}"
   shell:
-    cmd: "set -o pipefail && cat {{ Kfilename }}|cut -d' ' -f 7"
+    cmd: "set -o pipefail && cat {{ Kfilename }} | cut -d' ' -f 7"
     executable: /bin/bash
   register: rndckey
   ignore_errors: "{{ ansible_check_mode }}"
