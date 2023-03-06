@@ -2,7 +2,7 @@
 # tasks file for dns
 - name: package
   package:
-    name: '{{ dns_packages | default ( "bind9" ) }}'
+    name: "{{ dns_packages | default('bind9') }}"
   tags:
     - dns
     - package
