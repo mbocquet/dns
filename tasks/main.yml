@@ -17,7 +17,7 @@
 # - name: create DNSSEC key files
 #   command:
 #     'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
-#   register: Kfilescreation
+#   register: dns_kfilescreation
 #   notify: start bind
 #   when:
 #     - not ansible_check_mode
@@ -26,9 +26,9 @@
 #     - dns
 #     - keys
 
-- name: check K file
+- name: Check K file
   shell: ls /etc/bind/K*.key
-  register: Kfiles
+  register: dns_kfiles
   # ignore_errors: "{{ ansible_check_mode }}"
   changed_when: false
   when:
@@ -40,20 +40,20 @@
 
 - name: get Kfiles name
   set_fact:
-    Kfilename: "{{ Kfiles.stdout }}"
+    dns_kfilename: "{{ dns_kfiles.stdout }}"
   when:
     - dns_role == "master"
     # - not ansible_check_mode
-    # - Kfilescreation is succeeded
+    # - dns_kfilescreation is succeeded
   check_mode: false
   tags:
     - dns
     - keys
     - facts
 
-- name: "extract key from {{ Kfilename }}"
+- name: "extract key from {{ dns_kfilename }}"
   shell:
-    cmd: "set -o pipefail && cat {{ Kfilename }} | cut -d' ' -f 7"
+    cmd: "set -o pipefail && cat {{ dns_kfilename }} | cut -d' ' -f 7"
     executable: /bin/bash
   register: rndckey
   ignore_errors: "{{ ansible_check_mode }}"
@@ -61,7 +61,7 @@
   when:
     - dns_role == "master"
     # - not ansible_check_mode
-    # - Kfilescreation is succeeded
+    # - dns_kfilescreation is succeeded
   check_mode: false
   tags:
     - dns
