@@ -1,7 +1,7 @@
 ---
 # tasks file for dns
 - name: package
-  package:
+  ansible.builtin.package:
     name: "{{ dns_packages | default('bind9') }}"
   tags:
     - dns
@@ -27,7 +27,7 @@
 #     - keys
 
 - name: Check K file
-  shell: ls /etc/bind/K*.key
+  ansible.builtin.shell: ls /etc/bind/K*.key
   register: dns_kfiles
   # ignore_errors: "{{ ansible_check_mode }}"
   changed_when: false
@@ -39,7 +39,7 @@
     - keys
 
 - name: get Kfiles name
-  set_fact:
+  ansible.builtin.set_fact:
     dns_kfilename: "{{ dns_kfiles.stdout }}"
   when:
     - dns_role == "master"
@@ -52,7 +52,7 @@
     - facts
 
 - name: "extract key from {{ dns_kfilename }}"
-  shell:
+  ansible.builtin.shell:
     cmd: "set -o pipefail && cat {{ dns_kfilename }} | cut -d' ' -f 7"
     executable: /bin/bash
   register: rndckey
@@ -68,7 +68,7 @@
     - keys
 
 - name: set rndckeyvalue
-  set_fact:
+  ansible.builtin.set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
   when:
     - dns_role == "master"
@@ -79,7 +79,7 @@
     - keys
 
 - name: "check {{ dns_keyfile }}"
-  stat:
+  ansible.builtin.stat:
     path: '{{ dns_keyfile }}'
   register: rndckey
   tags:
@@ -88,7 +88,7 @@
 
 # TODO fix me
 # - name: "update {{ dns_keyfile }} with new key"
-#   lineinfile:
+#   ansible.builtin.lineinfile:
 #     path: '{{ dns_keyfile }}'
 #     regexp: '^.*secret.*$'
 #     line: '        secret "{{ rndckey.stdout }}";'
@@ -101,7 +101,7 @@
 #     - rndckey
 
 - name: named.conf.local
-  template:
+  ansible.builtin.template:
     src: 'named.conf.local.j2'
     dest: /etc/bind/named.conf.local
     mode: 0644
@@ -112,7 +112,7 @@
     - local
 
 - name: named.conf.options
-  template:
+  ansible.builtin.template:
     src: 'named.conf.options.j2'
     dest: /etc/bind/named.conf.options
     mode: 0644
@@ -123,7 +123,7 @@
     - options
 
 - name: check zones files
-  stat:
+  ansible.builtin.stat:
     path: '{{ dns_directory }}/{{ item.file }}'
   register: dns_zonefiles
   loop: '{{ dns_zones }}'
@@ -134,7 +134,7 @@
     - zones
 
 - name: zone files
-  template:
+  ansible.builtin.template:
     src: 'zone.{{ item.item.type }}.j2'
     dest: '{{ dns_directory }}/{{ item.item.file }}'
     group: '{{ dns_group }}'
