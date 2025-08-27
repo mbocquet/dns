@@ -1,20 +1,20 @@
 ---
 # tasks file for dns
-- name: package
+- name: Package
   ansible.builtin.package:
     name: "{{ dns_packages | default('bind9') }}"
   tags:
     - dns
     - package
 
-- name: service_facts
+- name: Service_facts
   ansible.builtin.service_facts:
   tags:
     - dns
     - facts
 
 # TODO fix me
-# - name: create DNSSEC key files
+# - name: Create DNSSEC key files
 #   command:
 #     'dnssec-keygen -K /etc/bind -a HMAC-MD5 -b 128 -n HOST {{ dns_keyname }}'
 #   register: dns_kfilescreation
@@ -38,7 +38,7 @@
     - dns
     - keys
 
-- name: get Kfiles name
+- name: Get Kfiles name
   ansible.builtin.set_fact:
     dns_kfilename: "{{ dns_kfiles.stdout }}"
   when:
@@ -67,7 +67,7 @@
     - dns
     - keys
 
-- name: set rndckeyvalue
+- name: Set rndckeyvalue
   ansible.builtin.set_fact:
     rndckeyvalue: "{{ rndckey.stdout }}"
   when:
@@ -100,7 +100,7 @@
 #     - dns
 #     - rndckey
 
-- name: named.conf.local
+- name: Named.conf.local
   ansible.builtin.template:
     src: 'named.conf.local.j2'
     dest: /etc/bind/named.conf.local
@@ -111,7 +111,7 @@
     - dns
     - local
 
-- name: named.conf.options
+- name: Named.conf.options
   ansible.builtin.template:
     src: 'named.conf.options.j2'
     dest: /etc/bind/named.conf.options
@@ -122,7 +122,7 @@
     - dns
     - options
 
-- name: check zones files
+- name: Check zones files
   ansible.builtin.stat:
     path: '{{ dns_directory }}/{{ item.file }}'
   register: dns_zonefiles
@@ -133,7 +133,7 @@
     - dns
     - zones
 
-- name: zone files
+- name: Zone files
   ansible.builtin.template:
     src: 'zone.{{ item.item.type }}.j2'
     dest: '{{ dns_directory }}/{{ item.item.file }}'
