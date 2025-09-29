@@ -51,7 +51,7 @@
     - keys
     - facts
 
-- name: "extract key from {{ dns_kfilename }}"
+- name: "Extract key from {{ dns_kfilename }}"
   ansible.builtin.shell:
     cmd: "set -o pipefail && cat {{ dns_kfilename }} | cut -d' ' -f 7"
     executable: /bin/bash
@@ -78,9 +78,9 @@
     - dns
     - keys
 
-- name: "check {{ dns_keyfile }}"
+- name: "Check {{ dns_keyfile }}"
   ansible.builtin.stat:
-    path: '{{ dns_keyfile }}'
+    path: "{{ dns_keyfile }}"
   register: rndckey
   tags:
     - dns
@@ -100,33 +100,33 @@
 #     - dns
 #     - rndckey
 
-- name: Named.conf.local
+- name: "Local config (named.conf.local)"
   ansible.builtin.template:
-    src: 'named.conf.local.j2'
+    src: named.conf.local.j2
     dest: /etc/bind/named.conf.local
     mode: 0644
     backup: true
-  notify: reload bind
+  notify: Reload bind
   tags:
     - dns
     - local
 
-- name: Named.conf.options
+- name: "Options (named.conf.options)"
   ansible.builtin.template:
-    src: 'named.conf.options.j2'
+    src: named.conf.options.j2
     dest: /etc/bind/named.conf.options
     mode: 0644
     backup: true
-  notify: reload bind
+  notify: Reload bind
   tags:
     - dns
     - options
 
 - name: Check zones files
   ansible.builtin.stat:
-    path: '{{ dns_directory }}/{{ item.file }}'
+    path: "{{ dns_directory }}/{{ item.file }}"
   register: dns_zonefiles
-  loop: '{{ dns_zones }}'
+  loop: "{{ dns_zones }}"
   when:
     - dns_role == "master"
   tags:
@@ -135,12 +135,12 @@
 
 - name: Zone files
   ansible.builtin.template:
-    src: 'zone.{{ item.item.type }}.j2'
-    dest: '{{ dns_directory }}/{{ item.item.file }}'
-    group: '{{ dns_group }}'
-    mode: '0664'
-  loop: '{{ dns_zonefiles.results }}'
-  notify: reload bind
+    src: "zone.{{ item.item.type }}.j2"
+    dest: "{{ dns_directory }}/{{ item.item.file }}"
+    group: "{{ dns_group }}"
+    mode: 0664
+  loop: "{{ dns_zonefiles.results }}"
+  notify: Reload bind
   when:
     - dns_role == "master"
     - not item.stat.exists

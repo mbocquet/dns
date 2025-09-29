@@ -1,6 +1,6 @@
 ---
 # handlers file for dns
-- name: reload bind
+- name: Reload bind
   ansible.builtin.service:
     name: bind9
     state: reloaded
