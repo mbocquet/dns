@@ -104,7 +104,7 @@
   ansible.builtin.template:
     src: named.conf.local.j2
     dest: /etc/bind/named.conf.local
-    mode: 0644
+    mode: "0644"
     backup: true
   notify: Reload bind
   tags:
@@ -115,7 +115,7 @@
   ansible.builtin.template:
     src: named.conf.options.j2
     dest: /etc/bind/named.conf.options
-    mode: 0644
+    mode: "0644"
     backup: true
   notify: Reload bind
   tags:
@@ -138,7 +138,7 @@
     src: "zone.{{ item.item.type }}.j2"
     dest: "{{ dns_directory }}/{{ item.item.file }}"
     group: "{{ dns_group }}"
-    mode: 0664
+    mode: "0664"
   loop: "{{ dns_zonefiles.results }}"
   notify: Reload bind
   when:
