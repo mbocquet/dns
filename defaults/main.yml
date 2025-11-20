@@ -7,59 +7,59 @@
 
 # example to install also dnsutils (for dig, nsupdate, etc)
 # dns_packages:
-#   - 'bind9'
-#   - 'dnsutils'
+#   - bind9
+#   - dnsutils
 
 # default values
 dns_directory: /var/cache/bind
 dns_group: bind
-dns_keyfile: '/etc/bind/rndc.key'
-dns_keyname: 'rndc-key'
+dns_keyfile: /etc/bind/rndc.key
+dns_keyname: rndc-key
 
 # dns_ttl: default TTL for records
-dns_ttl: '604800'
+dns_ttl: 604800
 
 # dns_soa_*: default values for SOA record
-dns_soa_email: 'hostmaster'
-dns_soa_refresh: '1w'
-dns_soa_retry: '1d'
-dns_soa_expire: '4w'
-dns_soa_minimum: '1d'
+dns_soa_email: hostmaster
+dns_soa_refresh: 1w
+dns_soa_retry: 1d
+dns_soa_expire: 4w
+dns_soa_minimum: 1d
 
-# dns_domain: 'example.org'
+# dns_domain: example.org
 
-# dns_role: should be 'master' or 'slave'.
-# dns_role: 'master'
+# dns_role: should be master or slave.
+# dns_role: master
 
-# dns_type: should be 'internal' or 'public'.
-# dns_type: 'internal'
+# dns_type: should be internal or public.
+# dns_type: internal
 
 # dns_control: control socket address. Should contains at least 127.0.0.1.
-dns_control: '127.0.0.1'
+dns_control: 127.0.0.1
 
 # dns_localnet: should contains local network definition to make a default
-# 'local' acl.
-# dns_localnet: '192.168.1.0/24'
+# local acl.
+# dns_localnet: 192.168.1.0/24
 
 # dns_forwarders:
-#   - '1.2.3.4'
-#   - '2.3.4.5'
+#   - 1.2.3.4
+#   - 2.3.4.5
 
 # dns_queryallow: should contains allowed query network addresses.
 # dns_queryallow:
-#   - '10.0.0.0/8'
-#   - '172.16.0.0/12'
-#   - '192.168.0.0/16'
-#   # - '{{ dns_localnet }}'
+#   - 10.0.0.0/8
+#   - 172.16.0.0/12
+#   - 192.168.0.0/16
+#   # - {{ dns_localnet }}
 
 # dns_recurseallow: should contains allowed recurse network addresses.
 # dns_recurseallow:
-#   - '10.0.0.0/8'
-#   - '172.16.0.0/12'
-#   - '192.168.0.0/16'
-#   # - '{{ dns_localnet }}'
+#   - 10.0.0.0/8
+#   - 172.16.0.0/12
+#   - 192.168.0.0/16
+#   # - {{ dns_localnet }}
 
 # dns_zones: zones definitions
 # dns_zones:
-#   - { type: 'forward', name: '{{ dns_domain }}', file: '{{ dns_domain }}' }
-#   - { type: 'reverse', name: '1.168.192.in-addr.arpa', file: '192.168.1' }
+#   - { type: forward, name: {{ dns_domain }}, file: {{ dns_domain }} }
+#   - { type: reverse, name: 1.168.192.in-addr.arpa, file: 192.168.1 }
