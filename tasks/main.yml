@@ -51,9 +51,9 @@
     - keys
     - facts
 
-- name: "Extract key from {{ dns_kfilename }}"
+- name: Get key from k file
   ansible.builtin.shell:
-    cmd: "set -o pipefail && cat {{ dns_kfilename }} | cut -d' ' -f 7"
+    cmd: set -o pipefail && cat {{ dns_kfilename }} | cut -d' ' -f 7
     executable: /bin/bash
   register: rndckey
   ignore_errors: "{{ ansible_check_mode }}"
@@ -78,7 +78,7 @@
     - dns
     - keys
 
-- name: "Check {{ dns_keyfile }}"
+- name: Check keyfile
   ansible.builtin.stat:
     path: "{{ dns_keyfile }}"
   register: rndckey
@@ -100,7 +100,7 @@
 #     - dns
 #     - rndckey
 
-- name: "Local config (named.conf.local)"
+- name: Local config | named.conf.local
   ansible.builtin.template:
     src: named.conf.local.j2
     dest: /etc/bind/named.conf.local
@@ -111,7 +111,7 @@
     - dns
     - local
 
-- name: "Options (named.conf.options)"
+- name: Options | named.conf.options
   ansible.builtin.template:
     src: named.conf.options.j2
     dest: /etc/bind/named.conf.options
@@ -135,7 +135,7 @@
 
 - name: Zone files
   ansible.builtin.template:
-    src: "zone.{{ item.item.type }}.j2"
+    src: zone.{{ item.item.type }}.j2
     dest: "{{ dns_directory }}/{{ item.item.file }}"
     group: "{{ dns_group }}"
     mode: "0664"
