@@ -5,4 +5,4 @@
     name: bind9
     state: reloaded
   when:
-    - "'bind9.service' in services"
+    - "'bind9.service' in ansible_facts.services"
